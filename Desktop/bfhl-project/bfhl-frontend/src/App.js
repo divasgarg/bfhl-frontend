@@ -4,12 +4,10 @@ import axios from "axios";
 const App = () => {
   const [inputData, setInputData] = useState('{ "data": ["A", "1", "B", "2", "C"] }');
   const [response, setResponse] = useState(null);
-  const [filter, setFilter] = useState([]);
 
   const handleSubmit = async () => {
     try {
       const jsonInput = JSON.parse(inputData);
-      // Update backend API URL
       const res = await axios.post("https://bfhl-backend-ryo2.onrender.com/bfhl", jsonInput);
       setResponse(res.data);
     } catch (error) {
@@ -17,15 +15,20 @@ const App = () => {
     }
   };
 
-  const renderFilteredResponse = () => {
+  const renderResponse = () => {
     if (!response) return null;
 
-    let filteredData = {};
-    if (filter.includes("Numbers")) filteredData.numbers = response.numbers;
-    if (filter.includes("Alphabets")) filteredData.alphabets = response.alphabets;
-    if (filter.includes("Highest Alphabet")) filteredData.highest_alphabet = response.highest_alphabet;
-
-    return <pre>{JSON.stringify(filteredData, null, 2)}</pre>;
+    return (
+      <div className="p-4 border bg-gray-100 mt-4">
+        <h2 className="text-xl font-bold mb-2">API Response:</h2>
+        <p><strong>User ID:</strong> {response.user_id}</p>
+        <p><strong>Email:</strong> {response.email}</p>
+        <p><strong>Roll Number:</strong> {response.roll_number}</p>
+        <p><strong>Numbers:</strong> {response.numbers.join(", ")}</p>
+        <p><strong>Alphabets:</strong> {response.alphabets.join(", ")}</p>
+        <p><strong>Highest Alphabet:</strong> {response.highest_alphabet.join(", ")}</p>
+      </div>
+    );
   };
 
   return (
@@ -39,23 +42,7 @@ const App = () => {
       <button className="bg-blue-500 text-white px-4 py-2 mt-2" onClick={handleSubmit}>
         Submit
       </button>
-      {response && (
-        <div className="mt-4">
-          <label className="block font-semibold">Filter Response:</label>
-          <select
-            multiple
-            className="border p-2 w-96"
-            onChange={(e) =>
-              setFilter(Array.from(e.target.selectedOptions, (option) => option.value))
-            }
-          >
-            <option value="Numbers">Numbers</option>
-            <option value="Alphabets">Alphabets</option>
-            <option value="Highest Alphabet">Highest Alphabet</option>
-          </select>
-          <div className="mt-4 p-4 border bg-gray-100">{renderFilteredResponse()}</div>
-        </div>
-      )}
+      {renderResponse()}
     </div>
   );
 };
