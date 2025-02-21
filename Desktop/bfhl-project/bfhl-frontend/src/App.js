@@ -1,48 +1,80 @@
 import React, { useState } from "react";
 import axios from "axios";
+import Select from "react-select";
 
 const App = () => {
-  const [inputData, setInputData] = useState('{ "data": ["A", "1", "B", "2", "C"] }');
+  const [inputData, setInputData] = useState('{"data":["M","1","334","4","B"]}');
   const [response, setResponse] = useState(null);
+  const [selectedFilters, setSelectedFilters] = useState([]);
 
+  // Multi-select filter options
+  const filterOptions = [
+    { value: "numbers", label: "Numbers" },
+    { value: "alphabets", label: "Alphabets" },
+    { value: "highest_alphabet", label: "Highest Alphabet" },
+  ];
+
+  // Function to handle API request
   const handleSubmit = async () => {
     try {
       const jsonInput = JSON.parse(inputData);
       const res = await axios.post("https://bfhl-backend-ryo2.onrender.com/bfhl", jsonInput);
       setResponse(res.data);
     } catch (error) {
-      alert("Invalid JSON or API Error");
+      console.error("Error:", error);
+      alert("Invalid JSON input or request failed!");
     }
   };
 
-  const renderResponse = () => {
+  // Render the filtered response based on selected filters
+  const renderFilteredResponse = () => {
     if (!response) return null;
 
     return (
-      <div className="p-4 border bg-gray-100 mt-4">
-        <h2 className="text-xl font-bold mb-2">API Response:</h2>
-        <p><strong>User ID:</strong> {response.user_id}</p>
-        <p><strong>Email:</strong> {response.email}</p>
-        <p><strong>Roll Number:</strong> {response.roll_number}</p>
-        <p><strong>Numbers:</strong> {response.numbers.join(", ")}</p>
-        <p><strong>Alphabets:</strong> {response.alphabets.join(", ")}</p>
-        <p><strong>Highest Alphabet:</strong> {response.highest_alphabet.join(", ")}</p>
+      <div className="p-4 border bg-gray-100">
+        <h3 className="font-bold">Filtered Response</h3>
+        {selectedFilters.some((f) => f.value === "numbers") && (
+          <p><strong>Numbers:</strong> {response.numbers.join(", ")}</p>
+        )}
+        {selectedFilters.some((f) => f.value === "alphabets") && (
+          <p><strong>Alphabets:</strong> {response.alphabets.join(", ")}</p>
+        )}
+        {selectedFilters.some((f) => f.value === "highest_alphabet") && (
+          <p><strong>Highest Alphabet:</strong> {response.highest_alphabet}</p>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="flex flex-col items-center p-5">
-      <h1 className="text-2xl font-bold mb-4">BFHL Challenge</h1>
+    <div className="max-w-xl mx-auto mt-10 p-5 border rounded shadow-lg bg-white">
+      {/* JSON Input */}
+      <h2 className="text-xl font-bold mb-3">API Input</h2>
       <textarea
-        className="border p-2 w-96 h-24"
+        className="w-full p-2 border rounded"
+        rows="3"
         value={inputData}
         onChange={(e) => setInputData(e.target.value)}
-      ></textarea>
-      <button className="bg-blue-500 text-white px-4 py-2 mt-2" onClick={handleSubmit}>
+      />
+      <button
+        className="w-full bg-blue-600 text-white py-2 rounded mt-3 hover:bg-blue-700"
+        onClick={handleSubmit}
+      >
         Submit
       </button>
-      {renderResponse()}
+
+      {/* Multi-Filter Dropdown */}
+      <h3 className="mt-5 text-lg font-bold">Multi Filter</h3>
+      <Select
+        isMulti
+        options={filterOptions}
+        value={selectedFilters}
+        onChange={setSelectedFilters}
+        className="mb-3"
+      />
+
+      {/* Render Response */}
+      {renderFilteredResponse()}
     </div>
   );
 };
